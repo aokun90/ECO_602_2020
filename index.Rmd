@@ -1,0 +1,693 @@
+---
+title: "ECo 602 - Analysis of Environmental Data"
+subtitle: "Final Project: Data Analysis"
+author: "Ari Okun"
+date: "Fall 2020"
+output:
+  html_document:
+    theme: readable
+    toc: TRUE
+    toc_float: TRUE
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+options(knitr.duplicate.label = TRUE)
+```
+
+
+<!-- The following text won't be displayed in your document.  It tells R how to make nicer looking buttons for your tabbed content. -->
+
+<style type="text/css" rel="stylesheet">
+
+.btn {
+    border-width: 0 0 0 0;
+    font-weight: normal;
+    text-transform: none;
+}
+
+.btn-default {
+    color: #2ecc71;
+    background-color: #ffffff;
+    border-color: #ffffff;
+}
+</style>
+
+
+# Introduction
+
+I have compiled some useful functions in R for reference.
+
+# Functions 1: Data Structure Functions {.tabset .tabset-pills}
+
+## Data Frames
+
+The function `data.frame()` creates a data frame, which is a table in which each column contains values of one variable and each row contains one set of values from each column.
+
+```{R data_frame}
+
+x <- data.frame("Height (inches" = 55,62, "Age" = c(21,15), "Name" = c("John","Dora"))
+
+```
+
+## `Library` and `Require`
+
+Both the `library` and `require` functions load a specified R package.
+
+```{r library and require}
+
+# Load the here package in order to open a file from a specified path:
+
+library(here)
+
+# or
+
+require(here)
+
+```
+
+## Reading a CSV file
+
+To read some data from a csv (comma-separated-values) file.
+
+I can use `read.csv()` along with the path to the file to read the data into a data.frame.
+
+Here's an example:
+
+```{r read_birds_data}
+
+#Load the hab.sta data file:
+
+require(here)
+
+dat_birds = read.csv(here("data", "hab.sta.csv"))
+
+```
+
+
+## Previewing the contents of a data frame
+
+I can use the `head()` function to print the first few lines of a data.frame.
+
+Here's an example with the dat_birds data
+
+```{r Head}
+
+head(dat_birds)
+
+```
+
+## Creating a Matrix
+
+A Matrix is a two dimensional data structure and can be created using the `matrix()` function. 
+
+If one of the dimension is provided, the other is inferred from length of the data.
+
+We can see that the matrix is filled column-wise. This can be reversed to row-wise filling by passing `TRUE` to the argument by row.
+
+Another way of creating a matrix is by using functions `cbind()` and `rbind()` as in column bind and row bind.
+
+
+``` {r Matrix}
+
+matrix(1:9, nrow = 3, ncol = 3)
+matrix(1:9, nrow=3, byrow=TRUE)
+cbind(c(1,2,3),c(4,5,6))
+rbind(c(1,2,3),c(4,5,6))
+
+```
+
+## Lists
+
+List is a data structure having components of mixed data types. List can be created using the list() function.
+
+I can create a list x, of three components with data types double, logical and integer vector.
+
+``` {R Lists}
+
+ x <- list("a" = 2.5, "b" = TRUE, "c" = 1:3)
+
+```
+
+## Vectors
+
+A vector is a basic data structure in R. It contains elements of the same type. The data types can be logical, integer, double, character, complex or raw. 
+To create a vector, use the `c()` function, followed by the components you would like to include.  
+
+The function `c()` *combines* or *concatenates* its arguments into a vector (a 1-dimensional data structure consisting of 1 or more elements).
+
+- All of the elements must be of the same *type*.
+- I can't combine character and numeric types in the same call to `c()`
+
+Here's two examples using numeric and character data types:
+
+```{r Vectors}
+# Create a vector of numbers:
+num_vec  = c(1, 4, 8, 9, 13)
+
+# Create a vector of characters:
+char_vec = c("a", "fish", "data is cool")
+```
+
+## Subsetting Operators and Functions
+
+You can extract elements from a vector using the square brackets `[]`. You can 
+
+You can use double brackets `[[]]` to select elements in more or less the same way as single brackets. The difference between single and double is that with double brackets any element names are not displayed:
+
+``` {R Subsetting}
+x[2]
+x['b']
+
+x[[2]]
+```
+
+## Subset 
+
+The `subset( )` function is the easiest way to select variables and observations. Below I have subsetted sites from the dat_birds data set with elevation over 550.
+
+``` {r subset}
+
+subset(dat_birds, elev > 550)
+
+```
+
+## $
+
+To access one variable in a data set, use the dollar sign, `$`. Below I have selected the contents of the elevation column using the `$` function.
+
+```{r subset_2}
+
+dat_birds$elev
+
+```
+
+## Printing Functions
+
+I can show the contents of a vector by typing the name of the vector, or using the `print()` function.
+
+```{r printing}
+
+# Typing the name of the vector into the console prints the contents
+num_vec
+
+# The print() function accomplishes the same task:
+print(char_vec)
+```
+
+## `length()`
+
+The `length ()` function retrieves the length of vectors (including lists) and factors, and of any other R object for which a method has been defined.
+
+```{r length}
+
+length(dat_birds$elev)
+
+```
+
+## `nrow()`
+
+The `nrow()` function allows me to retrieve the number of rows in the data set.
+
+```{r nrow}
+
+# Retrieve the number of rows
+nrow(dat_birds)
+
+```
+
+## `ncol()`
+
+The `ncol()` function allows me to retrieve  the number of columns in a dataset.
+
+```{r ncol}
+
+# Retrieve the number of columns
+ncol(dat_birds)
+
+```
+
+## `dim()`
+
+The `dim()` function retrieves the dimensions of an object.
+
+```{r dim}
+
+dim(dat_birds)
+
+```
+
+# Functions 2: Numerical Data Exploration  {.tabset .tabset-pills}
+
+## `summary()`
+
+The `summary()` function produces summaries of the results of various model fitting functions.
+
+```{r summary}
+
+# The summary function for the dat_birds data set will return summary statistics for each object in the data set.
+
+summary(dat_birds)
+
+```
+
+## `mean()`
+
+The `mean()`returns to arithmetic means of the values in `x`.
+
+```{r mean}
+
+# The following call will return the mean elevation of the sample plots in the dat_birds dataset.
+
+mean(dat_birds$elev)
+
+```
+
+
+## `sd()`
+
+The `sd()` function returns the standard deviation of the values in `x`.
+
+```{r standard deviation}
+
+# The following call will return the standard deviation of the elevation data in the dat_birds data set.
+
+sd(dat_birds$elev)
+
+```
+
+
+# Functions 3: Graphical Data Exploration {.tabset .tabset-pills}
+
+## `Par()`
+
+`par()` can be used to set graphical parameters.
+
+I can put multiple graphs in a single plot by setting graphical parameters with the `par(mfrow = ... )` function. The following call will do this. 
+
+`par(mar = ...)` sets the margin sizes of the plot in the following order: bottom, left, top, and right. The default is c(5.1, 4.1, 4.1, 2.1).
+
+You can use `dev.off()` to reset the plot display.
+
+```{R plot display}
+
+par(mfrow=c(2,2))
+
+par(mar=c(3.5, 3.5, 2, 1))
+
+dev.off()
+```
+
+## Scatterplots
+
+To plot a basic scatterplot, use `plot()`. You need to determine a relevant x-axis (independent variable) and y-axis (response variable). Some useful arguments that can be used within the plot call that can customize the visual graphics of your plot include the following:
+
+`col` = Specifies the color scheme of your plot. Colors can be chosen in a variety of ways including name, hex code, or numbers. There are many handy cheat sheets online to help choose a color. 
+
+`pch` = The graphical argument used to specify the shape of the points in a plot. There are online cheat sheets to determine which number corresponds with each shape.
+
+`cex` = Controls the amount by which plotting text and symbols are scaled relative to the default. =default, 1.5 is 50% larger, 0.5 is 50% smaller, etc.
+
+`main` = Allows you to change the header of the plot.
+
+`xlab` = Allows you to change the x-axis label.
+
+`ylab` = Allows you to change the y-axis label.
+
+`xlim` = Changes the lower and upper limit of the range of values on the x-axis.
+
+`ylim` = Changes the lower and upper limit of the range of values on the y-axis.
+
+```{r How to Build a Scatterplot}
+
+# The following code will build a scatterplot with specific graphical arguments.
+
+plot(x = dat_birds$elev, y = dat_birds$ba.snag,
+     col = "Red",
+     pch = 1,
+     cex = .5,
+     main = "Basal Area of Snags",
+     xlab = "Plot elevation (m)",
+     ylab = "Basal Area (m2)",
+     xlim = c(50,900),
+     ylim = c(0,200))
+
+```
+
+## Histogram
+ 
+To plot a histogram in R use `hist()`. Some useful arguments that can be used within the plot call that can customize the visual graphics of your plot include the following:
+
+'breaks' = Used to change how the histogram divides the intervals between values. R treats the 'breaks' argument as a suggestion. One way to provide the break points yourself is to use the breaks argument with a vector of values such as the following.
+
+``` {R How to build a Histogram}
+
+x <- rnorm(250)
+hist(x, breaks=c(-4,-3,-2,-1,0,1,2,3,4,5))
+
+```
+
+## Boxplots
+
+To plot a Boxplot in R use `boxplot()`. Some useful arguments that can be used within the plot call that can customize the visual graphics of your plot include the following:
+
+
+``` {R How to build a Boxplot}
+
+# The following code will create a boxplot of a random normal distribution.
+
+x <- rnorm(250)
+boxplot(x, xlab = "x", ylab= "y", main = "Example Boxplot")
+
+```
+
+
+# Functions 4: Distribution Functions {.tabset .tabset-pills}
+
+The function `dnorm()` returns the value of the probability density function for a normal distribution given parameters for x, μ, and σ.
+
+The function `pnorm()` returns the value of the distribution function for a normal distribution.
+
+The function `qnorm()`returns the specified percentile (quantile) of a normal distribution.
+
+``` {R Distribution Functions}
+
+# What is the probability of an x value of 1 given a normal distribution with mean = 0 and standard deviation = 1?
+dnorm(1, mean = 0, sd = 1)
+
+# What percentage of values are less than 2 in a normal distribution with mean of 5 and standard deviation of 3?
+pnorm(2, mean = 5, sd = 3)
+
+# What is the Z-score of the 75th quantile of the normal distribution?
+qnorm(.75, mean = 0, sd = 1)
+
+```
+
+## Binomial Distribution
+
+The binomial distribution is a discrete probability distribution. It describes the outcome of n independent trials in an experiment. Each trial is assumed to have only two outcomes, either success or failure. I can find the probability of having exactly x successes by random attempts using `dbinom()`.
+
+```{r dbinom}
+
+# What is the probability of 4 successes in random sample of size 12 and with each trial having 20% probability of success?
+
+dbinom(4, size=12, prob=0.2) 
+
+```
+
+## pbinom
+
+The function `pbinom()` returns the value of the cumulative density function (cdf) of the binomial distribution given a certain random variable q, number of trials (size) and probability of success on each trial (prob). This will return the probability of having x successes or less by random attempts.
+
+``` {R Binomial Distribution}
+
+# What is the probability of 4 successes or less in random sample of size 12 and with each trial having 20% probability of success?
+
+pbinom(4, size=12, prob=0.2) 
+
+```
+
+## Qbinom
+The function `qbinom()` returns the value of the inverse cumulative density function (cdf) of the binomial distribution given a certain random variable q, number of trials (size) and probability of success on each trial (prob).
+
+```{R qbinom}
+
+# What is the 10th quantile of a binomial distribution with 10 trials and prob # of success on each trial = 0.4?
+
+qbinom(.10, size=10, prob=.4)
+
+```
+
+
+# Functions 5: Other Functions {.tabset .tabset-pills}
+
+## Subset 
+
+See previous description of subset function.
+
+
+# Part 2: Data Anaylsis
+
+## Delomys data summary
+
+```{r}
+
+dat_delomys = read.csv(here("data", "delomys.csv"))
+summary(dat_delomys$body_mass)
+summary(dat_delomys$body_length)
+
+shapiro.test(dat_delomys$body_mass)
+shapiro.test(dat_delomys$body_length)
+
+```
+
+
+## Scatterplot of body mass and body length
+
+```{r fig.width=10}
+
+require(here)
+dat_delomys = read.csv(here("data", "delomys.csv"))
+
+plot(body_length ~ body_mass, data = dat_delomys, main = "Scatterplot of Body Length and Body Mass")
+
+```
+
+
+## Histogram of Body Mass
+
+```{r fig.width=10}
+
+hist(dat_delomys$body_mass, main = "Histogram of Body Mass")
+```
+
+## Histogram of body length
+
+```{r fig.width=10}
+
+hist(dat_delomys$body_length, main="Histogram of Body Length")
+
+```
+
+## Conditional boxplot of body mass, conditioned on species (column binomial)
+
+```{r fig.width=10}
+
+boxplot(body_mass~binomial, data = dat_delomys, main = "Body Mass per Species")
+```
+
+
+## Conditional boxplot of body mass, conditioned on sex (column binomial)
+
+```{r fig.width=10}
+
+boxplot(body_mass~sex, data = dat_delomys, main="Boxplot of Body Mass per Sex")
+
+```
+
+## conditional boxplot of body mass, conditioned on both species and sex
+
+```{r fig.width=10}
+
+boxplot(body_mass~binomial * sex, data = dat_delomys, main= "Body Mass Conditioned on Species and Sex")
+
+```
+
+## Analysis of Delomys data
+
+1. Qualitatively describe the relationship between body mass and length:
+
+Looking at the scatterplot of Body length and Body Mass, there appears to be a positive linear relationship between body mass and body length.
+
+2. Qualitatively describe the shapes of the histograms.
+Do the data appear normally-distributed? Explain why or why not.
+
+Both histograms of body length and body mass appear to be normally distributed. In both graphs, the distribution is clustered around a central peak with tails on both sides.
+
+
+3. Using both the histograms and normality tests, do you think the (unconditioned) body masses and body length are normally-distributed?
+
+Both the histograms and normality tests show that the body mass and body length data is normally distributed. The shapiro tests have a very small p-value, below the standard alpha level. The histograms both follow a normal curve.
+
+
+4. Examine the conditional boxplots. Describe any graphical evidence you see for body mass differences based on species and/or sex.
+
+Analyzing the conditional boxplots, it appears that the Delomys dorsalis species have a higher body mass than the Delomys sublineatus. I came to this conclusion because the mean body mass of both the male and female dorsalis species is higher then the corresponding sublineatus species. 
+
+Another observations could be made that the males of both species are slightly heavier then the females of each species. This can be determined visually by the boxplots since the mean values of the males are both higher than the corresponding female species.
+
+# Model Building
+
+## Model 1
+```{r Model 1}
+
+plot(body_length ~ body_mass, data = dat_delomys, main = "Scatterplot of Body Length and Body Mass")
+
+fit_1 = lm(body_mass ~ body_length, data = dat_delomys)
+fit_1
+
+```
+
+## Model 2
+
+```{r Model 2}
+
+fit_2= lm(body_mass ~ sex, data = dat_delomys)
+anova(fit_2)
+
+```
+
+## Model 3
+
+```{r Model 3}
+
+
+fit_3= lm(body_mass ~ binomial, data = dat_delomys)
+anova(fit_3)
+
+```
+
+## Model 4
+
+```{r Model 4}
+
+fit_4= lm(body_mass ~ sex + binomial, data = dat_delomys)
+anova(fit_4)
+
+```
+
+## Model 5
+
+```{r Model 5}
+
+fit_5= lm(body_mass ~ sex * binomial, data = dat_delomys)
+anova(fit_5)
+
+```
+
+## Model Diagnostics
+
+As we can see in the following numerical and graphical diagnostics, I can find the residuals of each model I created. By plotting the residuals of each model, I can see that every model appears to be normally distributed. By doing a Shapiro Test on the residuals we can test the normality of the residuals as well. By doing this I can see that the p-values of each of the residuals are very low concluding that each of the predictors creates a significantly better model. Fit_2 still had a low p-value but it was relatively higher than all of the other models.
+
+```{r Model Diagnostics}
+
+resid_fit_1= residuals(fit_1)
+hist(resid_fit_1)
+shapiro.test(resid_fit_1)
+
+resid_fit_2= residuals(fit_2)
+hist(resid_fit_2)
+shapiro.test(resid_fit_2)
+
+resid_fit_3= residuals(fit_3)
+hist(resid_fit_3)
+shapiro.test(resid_fit_3)
+
+resid_fit_4= residuals(fit_4)
+hist(resid_fit_4)
+shapiro.test(resid_fit_4)
+
+resid_fit_5= residuals(fit_5)
+hist(resid_fit_5)
+shapiro.test(resid_fit_5)
+
+```
+
+## Model Interpretation
+
+```{r}
+
+# Model coefficient table for the mass/length relationship
+
+knitr::kable(coef(summary(fit_1)))
+
+```
+
+1. What is the magnitude of the mass/length relationship?
+
+Looking at the model coefficient table, for every unit increase of body_length the body_mass goes up by .6343. The intercept of the coefficient table is -28.69 which only makes sense scientifically when you consider that the species will never have a body_length of 0 (which would correspond with a -28.69 weight). In fact the minimum body length is 49 which would correspond with a 2.4g body mass according to the model coefficient table.
+
+2. What is the expected body length of an animal that weighs 100g?
+
+The expected body length of an animal that weighs 100g is 34.74. 
+
+3. What is the expected body length of an animal that weighs 0g?
+
+The expected body length of an animal that weighs 0g is -28.6931.
+
+## Model Coefficient tables for body mass 
+
+```{r}
+
+knitr::kable(coef(summary(fit_2)))
+knitr::kable(coef(summary(fit_3)))
+knitr::kable(coef(summary(fit_4)))
+knitr::kable(coef(summary(fit_5)))
+```
+
+1. What is the base level for sex?
+
+The base level for sex would be females
+
+2. What is the base level for binomial?
+
+The base level for binomial would be Delomys dorsalis.
+
+3. Which sex is heavier?
+
+The male sex is heavier since the coefficient estimate is positive.
+
+4. Which species is heavier?
+
+Delomys dorsalis is heavier since sublineatus has a negative coefficient estimate.
+
+## Anova tables of the body mass
+
+```{r}
+
+knitr::kable(anova(fit_1))
+knitr::kable(anova(fit_2))
+knitr::kable(anova(fit_3))
+knitr::kable(anova(fit_4))
+knitr::kable(anova(fit_5))
+
+```
+
+1. Are sex and species significant predictors for body mass?
+
+Yes, both sex and species are significant predictors of body mass, since they have very low p-values.
+
+
+2. Is there a significant interaction?
+
+Since the two way anova table of fit_5 has a high p-value above the alpha level this indicates that there is not a significant interation between these two variables. 
+
+3. Does the significance (as measured by p-value) of either of the main effects (sex and species) differ much between the single-predictor models, the additive model, and the interactive model?
+
+The sex or species effect do not differ significantly in any of the models, since the p-values are consistently very low.
+
+## Model Comparison: Body Mass
+
+```{r}
+
+AIC(fit_1)
+AIC(fit_2)
+AIC(fit_3)
+AIC(fit_4)
+AIC(fit_5)
+
+```
+
+1. Which two models have the lowest AIC?
+
+The models with the lowest AIC are fit_1 (11780.88) and fit_4 (12896.73).
+
+2. Which of the two models with lowest AIC scores would you select?
+
+I would choose model 1 based off of these model comparisons. This linear regression model is less complex then the other models and therefore will be simpler to interpret. It also has the lowest AIC which means it has the best fit.
+
+
